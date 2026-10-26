@@ -1,0 +1,35 @@
+<div class="sim">
+  <div class="main">
+    <div class="panel glow">
+      <div class="toolbar">
+        <button class="btn primary sm" data-play>▶ Run</button>
+        <select data-speed aria-label="Speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+        <span class="sep"></span>
+        <select id="psp" aria-label="PSP"></select>
+        <button class="btn sm bad" id="outage">Outage</button>
+        <button class="btn sm" id="slow">Slow down</button>
+        <span class="sep"></span>
+        <select id="iss" aria-label="Issuing bank"></select>
+        <button class="btn sm" id="bank">Bank down</button>
+        <button class="btn sm" id="attack">Card testing</button>
+        <button class="btn sm" id="clear">Clear</button>
+        <span class="sp"></span>
+        <span class="live"><i></i> paused</span>
+      </div>
+      <div id="kpis" style="margin-top:12px"></div>
+    </div>
+    <div class="viz" id="floww" style="height:500px"><span class="tag" id="clock">payments · smart router · PSPs</span><canvas id="flow"></canvas></div>
+    <div class="g2 grid">
+      <div class="panel"><div class="ph">Auth rate, last 10 s <span class="sp"></span><select id="base" aria-label="Baseline" class="mini"></select></div><canvas class="chart" id="ch1" style="height:160px"></canvas></div>
+      <div class="panel"><div class="ph">Traffic share by PSP <span class="sp"></span><span class="pill dim">smart router</span></div><canvas class="chart" id="ch2" style="height:160px"></canvas></div>
+    </div>
+    <div class="panel"><div class="ph">Same payments, five routers <span class="sp"></span><span class="pill dim">shadow comparison</span></div><div id="cmp" class="cmp"></div></div>
+  </div>
+  <div class="side">
+    <div class="panel"><div class="ph">Routing decision <span class="sp"></span><span class="pill dim" id="insw">latest card</span></div><div id="insp" class="insp"></div></div>
+    <div class="panel"><div class="ph">Circuit breakers <span class="sp"></span><span class="pill dim" id="brp">PSP × method</span></div><div id="brk" class="brk"></div></div>
+    <div class="panel"><div class="ph">Chargebacks <span class="sp"></span><span class="pill dim" id="dsp">—</span></div><div id="dsl" class="dsl"></div></div>
+    <div class="panel"><div class="ph">FX desk <span class="sp"></span><span class="pill dim">250 bps markup</span></div><div id="fxd" class="fxd"></div></div>
+    <div class="panel"><div class="ph">Events</div><div id="log" class="log" style="height:180px;font-size:11px"></div></div>
+  </div>
+</div>

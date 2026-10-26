@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prism PayRoute · Smart PSP routing with breakers, safe failover, compliance, FX and chargebacks · Prism Systems</title>
+  <meta name="description" content="Prism PayRoute decides which payment service provider should process each payment, and what to do when it fails. Each PSP × method × issuer has a success estimate that decays over time and borrows strength from its parent, and the router samples from it (Thompson sampling), so it keeps exploring without wasting much traffic. The score subtracts fees and latency. Circuit breakers stop sending traffic to a failing PSP and probe it before reopening. Bank-wide failures are recognised as issuer outages, so healthy PSPs are not punished and pointless retries stop. Hard declines (insufficient funds, wrong PIN) are never retried. Timeouts are ambiguous, so the router asks the PSP whether the money was captured before trying elsewhere, which is how it avoids double charges. A pre-route compliance gate covers sanctions, Luhn and BIN checks, card-on-file tokenisation, 3DS/AFA, e-mandate and UPI limits, data localisation and velocity. There is also an FX desk with expiring quotes and DCC comparison, plus a chargeback lifecycle with deadlines, evidence scoring and 3DS liability shift." />
+  <meta name="theme-color" content="#06070d" />
+  <meta property="og:title" content="Prism PayRoute · Prism Systems" />
+  <meta property="og:description" content="Prism PayRoute decides which payment service provider should process each payment, and what to do when it fails. Each PSP × method × issuer has a success estimate that decays over time and borrows strength from its parent, and the router samples from it (Thompson sampling), so it keeps exploring without wasting much traffic. The score subtracts fees and latency. Circuit breakers stop sending traffic to a failing PSP and probe it before reopening. Bank-wide failures are recognised as issuer outages, so healthy PSPs are not punished and pointless retries stop. Hard declines (insufficient funds, wrong PIN) are never retried. Timeouts are ambiguous, so the router asks the PSP whether the money was captured before trying elsewhere, which is how it avoids double charges. A pre-route compliance gate covers sanctions, Luhn and BIN checks, card-on-file tokenisation, 3DS/AFA, e-mandate and UPI limits, data localisation and velocity. There is also an FX desk with expiring quotes and DCC comparison, plus a chargeback lifecycle with deadlines, evidence scoring and 3DS liability shift." />
+  <meta property="og:image" content="https://krishyaa06.github.io/prism-payroute/assets/screenshots/desktop.png" />
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/pro.css" />
+  <link rel="stylesheet" href="css/app.css" />
+  <style>:root{--accent:#34F5C5;--accent-2:#5CC8FF}</style>
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <header class="topbar"><div class="wrap">
+    <a class="brand" href="./"><span class="mark">◆</span><b>PRISM</b><span>PayRoute</span></a>
+    <nav>
+      <a class="nl" href="#sim">Simulator</a><a class="nl" href="#features">Features</a><a class="nl" href="#how">How it works</a><a class="nl" href="#arch">Architecture</a><a class="nl" href="#use">Use it</a>
+      <a class="btn sm" href="https://github.com/krishyaa06/prism-payroute" target="_blank" rel="noreferrer">★ GitHub</a>
+    </nav>
+  </div></header>
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow"><span class="n">12 / 12</span>Prism Systems · FinTech &amp; Banking</p>
+      <h1>Payment routing that <em>learns, fails over and never charges twice</em></h1>
+      <p class="lead">A smart payment router for UPI, cards, netbanking and wallets. It scores five PSPs with decayed Bayesian success estimates and Thompson sampling, weighs fees and latency, trips per-PSP circuit breakers, detects bank-wide outages, fails over only on soft declines, and runs a status inquiry before retrying a timeout. Around it sit a compliance gate, an FX desk with DCC, and a chargeback state machine.</p>
+      <div class="cta"><a class="btn primary" href="#sim">▶ Launch the simulator</a><a class="btn" href="#use">Use the engine</a><a class="btn ghost" href="https://github.com/krishyaa06/prism-payroute" target="_blank" rel="noreferrer">View source →</a></div>
+      <div class="chips"><span class="chip"><i></i>Zero dependencies</span><span class="chip"><i></i>Thompson sampling</span><span class="chip"><i></i>Circuit breakers</span><span class="chip"><i></i>Safe failover</span><span class="chip"><i></i>Compliance gate</span><span class="chip"><i></i>Chargeback FSM</span></div>
+    </section>
+    <section class="section wrap" id="sim">
+      <div class="sec-head"><span class="kicker">Live simulator</span><h2>Five PSPs, live traffic, and outages you can cause</h2><p>About 14 payments a second flow from UPI, cards, netbanking and wallets through the smart router to five fictional PSPs. Each one is also replayed through four baseline routers against the same simulated network, so the comparison is fair. Take a PSP down or slow it, knock out a bank, or launch a card-testing attack, then watch the breakers, the failovers and the auth-rate gap. You can also answer chargebacks yourself.</p></div>
+<div class="sim">
+  <div class="main">
+    <div class="panel glow">
+      <div class="toolbar">
+        <button class="btn primary sm" data-play>▶ Run</button>
+        <select data-speed aria-label="Speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+        <span class="sep"></span>
+        <select id="psp" aria-label="PSP"></select>
+        <button class="btn sm bad" id="outage">Outage</button>
+        <button class="btn sm" id="slow">Slow down</button>
+        <span class="sep"></span>
+        <select id="iss" aria-label="Issuing bank"></select>
+        <button class="btn sm" id="bank">Bank down</button>
+        <button class="btn sm" id="attack">Card testing</button>
+        <button class="btn sm" id="clear">Clear</button>
+        <span class="sp"></span>
+        <span class="live"><i></i> paused</span>
+      </div>
+      <div id="kpis" style="margin-top:12px"></div>
+    </div>
+    <div class="viz" id="floww" style="height:500px"><span class="tag" id="clock">payments · smart router · PSPs</span><canvas id="flow"></canvas></div>
+    <div class="g2 grid">
+      <div class="panel"><div class="ph">Auth rate, last 10 s <span class="sp"></span><select id="base" aria-label="Baseline" class="mini"></select></div><canvas class="chart" id="ch1" style="height:160px"></canvas></div>
+      <div class="panel"><div class="ph">Traffic share by PSP <span class="sp"></span><span class="pill dim">smart router</span></div><canvas class="chart" id="ch2" style="height:160px"></canvas></div>
+    </div>
+    <div class="panel"><div class="ph">Same payments, five routers <span class="sp"></span><span class="pill dim">shadow comparison</span></div><div id="cmp" class="cmp"></div></div>
+  </div>
+  <div class="side">
+    <div class="panel"><div class="ph">Routing decision <span class="sp"></span><span class="pill dim" id="insw">latest card</span></div><div id="insp" class="insp"></div></div>
+    <div class="panel"><div class="ph">Circuit breakers <span class="sp"></span><span class="pill dim" id="brp">PSP × method</span></div><div id="brk" class="brk"></div></div>
+    <div class="panel"><div class="ph">Chargebacks <span class="sp"></span><span class="pill dim" id="dsp">—</span></div><div id="dsl" class="dsl"></div></div>
+    <div class="panel"><div class="ph">FX desk <span class="sp"></span><span class="pill dim">250 bps markup</span></div><div id="fxd" class="fxd"></div></div>
+    <div class="panel"><div class="ph">Events</div><div id="log" class="log" style="height:180px;font-size:11px"></div></div>
+  </div>
+</div>
+
+    </section>
+    <section class="section wrap" id="features">
+      <div class="sec-head reveal"><span class="kicker">Features</span><h2>What's inside the engine</h2><p>Real algorithms, not mock-ups. The simulator above runs the exact same code you import.</p></div>
+      <div class="feat"><div class="card reveal"><div class="ic">◎</div><h3>Learns success rates</h3><p>Success and failure counts per PSP × method × issuer decay with a 2-minute half-life and borrow a prior from the PSP × method level, so a new combination starts sensible and an old outage is forgotten.</p></div><div class="card reveal"><div class="ic">⚄</div><h3>Thompson sampling</h3><p>The router ranks PSPs on a sample from each posterior rather than the mean. Uncertain PSPs get some traffic, and well-known bad ones get almost none.</p></div><div class="card reveal"><div class="ic">₹</div><h3>Cost and latency aware</h3><p>Score = sampled success − fee ratio − latency penalty, with tunable weights. Fees include amex surcharges and cross-border uplift, all in exact integer paise.</p></div><div class="card reveal"><div class="ic">⏻</div><h3>Circuit breakers</h3><p>A rolling 30 s window per PSP × method. When failures pass 50% over at least 12 calls the breaker opens. After the cooldown, a few probes decide whether it closes or reopens with a doubled cooldown.</p></div><div class="card reveal"><div class="ic">🏦</div><h3>Issuer outage detection</h3><p>If the failure code says the bank is down, the PSP isn&#x27;t blamed. A separate issuer breaker limits attempts to one and suggests another payment method instead of retrying.</p></div><div class="card reveal"><div class="ic">↺</div><h3>Safe failover</h3><p>Only soft declines are retried, within an attempt limit and a 15 s budget. On a timeout the router asks the PSP for the payment status first, and if it was captured it stops. That is why the smart router never double-charges.</p></div><div class="card reveal"><div class="ic">⚖</div><h3>Compliance gate</h3><p>Checks for sanctions, Luhn and BIN, card-on-file tokenisation, 3DS/AFA step-up, e-mandate and UPI limits, data localisation for domestic payments, and per-instrument velocity. Each block returns a code and a reason.</p></div><div class="card reveal"><div class="ic">⇄</div><h3>FX, DCC and disputes</h3><p>Firm FX quotes with markup and expiry, a DCC versus card-network comparison, and a chargeback state machine with deadlines, evidence scoring, pre-arbitration and 3DS liability shift.</p></div></div>
+    </section>
+    <section class="section wrap" id="how">
+      <div class="sec-head reveal"><span class="kicker">How it works</span><h2>From request to result</h2></div>
+      <div class="steps"><div class="step reveal"><h3>Normalise</h3><p>Validate the method, currency and amount (exact minor units), look up the BIN, and redact the card number so it is never stored.</p></div><div class="step reveal"><h3>Gate</h3><p>Compliance blocks, asks for 3DS/AFA, or restricts the payment to PSPs that store data in India.</p></div><div class="step reveal"><h3>Rank</h3><p>Eligible PSPs are scored from a Thompson sample minus fee and latency. Breaker state and merchant rules are applied, and every row records why it was ranked or excluded.</p></div><div class="step reveal"><h3>Attempt</h3><p>Try the best PSP. Success ends it, a hard decline ends it, and a soft decline fails over. A timeout triggers a status inquiry first.</p></div><div class="step reveal"><h3>Learn</h3><p>Only technical outcomes update the estimates and breakers. Issuer-wide failures feed the issuer breaker, and hard declines teach nothing about the PSP.</p></div></div>
+    </section>
+    <section class="section wrap" id="arch">
+      <div class="sec-head reveal"><span class="kicker">Architecture</span><h2>System design</h2><p>Every box is a module in src/. Data flows left to right.</p></div>
+      <div class="card arch reveal"><svg viewBox="0 0 1160 230" role="img" aria-label="Architecture diagram"><path class="e" d="M258,102 C288,102 288,124 258,124"/><path class="f" d="M258,102 C288,102 288,124 258,124"/><path class="e" d="M272,153 C290,153 290,73 308,73"/><path class="f" d="M272,153 C290,153 290,73 308,73"/><path class="e" d="M548,102 C578,102 578,124 548,124"/><path class="f" d="M548,102 C578,102 578,124 548,124"/><path class="e" d="M562,153 C580,153 580,73 598,73"/><path class="f" d="M562,153 C580,153 580,73 598,73"/><path class="e" d="M838,102 C868,102 868,124 838,124"/><path class="f" d="M838,102 C868,102 868,124 838,124"/><path class="e" d="M598,153 C580,153 580,153 562,153"/><path class="f" d="M598,153 C580,153 580,153 562,153"/><text class="el" x="580" y="147" text-anchor="middle">learn</text><path class="e" d="M852,153 C870,153 870,153 888,153"/><path class="f" d="M852,153 C870,153 870,153 888,153"/><path class="e" d="M272,153 C580,153 580,73 888,73"/><path class="f" d="M272,153 C580,153 580,73 888,73"/><text class="lane" x="145" y="24" text-anchor="middle">CHECKOUT</text><g class="node k0"><rect x="18" y="44" width="254" height="58" rx="12"/><text x="145" y="69" text-anchor="middle">HTTP API</text><text class="s" x="145" y="83" text-anchor="middle">Idempotency-Key</text></g><g class="node k0"><rect x="18" y="124" width="254" height="58" rx="12"/><text x="145" y="149" text-anchor="middle">Normalise</text><text class="s" x="145" y="163" text-anchor="middle">BIN · redact PAN</text></g><text class="lane" x="435" y="24" text-anchor="middle">DECIDE</text><g class="node kk2"><rect x="308" y="44" width="254" height="58" rx="12"/><text x="435" y="69" text-anchor="middle">Compliance</text><text class="s" x="435" y="83" text-anchor="middle">3DS · limits · localisation</text></g><g class="node kk2"><rect x="308" y="124" width="254" height="58" rx="12"/><text x="435" y="149" text-anchor="middle">Ranker</text><text class="s" x="435" y="163" text-anchor="middle">Thompson · fee · latency</text></g><text class="lane" x="725" y="24" text-anchor="middle">EXECUTE</text><g class="node kk3"><rect x="598" y="44" width="254" height="58" rx="12"/><text x="725" y="69" text-anchor="middle">Breakers</text><text class="s" x="725" y="83" text-anchor="middle">PSP · issuer</text></g><g class="node kk3"><rect x="598" y="124" width="254" height="58" rx="12"/><text x="725" y="149" text-anchor="middle">Attempts</text><text class="s" x="725" y="163" text-anchor="middle">failover · inquiry</text></g><text class="lane" x="1015" y="24" text-anchor="middle">AFTER</text><g class="node k0"><rect x="888" y="44" width="254" height="58" rx="12"/><text x="1015" y="69" text-anchor="middle">FX desk</text><text class="s" x="1015" y="83" text-anchor="middle">quote · DCC</text></g><g class="node k0"><rect x="888" y="124" width="254" height="58" rx="12"/><text x="1015" y="149" text-anchor="middle">Chargebacks</text><text class="s" x="1015" y="163" text-anchor="middle">FSM · deadlines</text></g></svg></div>
+    </section>
+    <section class="section wrap" id="use">
+      <div class="sec-head reveal"><span class="kicker">Use it</span><h2>Ship it in your own stack</h2><p>Zero dependencies. Works in Node.js 18+ and modern browsers.</p></div>
+      <div class="tabs" data-tabs="use"><button class="on">JavaScript API</button><button>CLI</button><button>Install</button></div>
+      <div class="tabp on" data-tabp="use"><div class="codebox"><div class="bar2"><i></i><i></i><i></i><span>example.js</span><button class="btn sm ghost copy" data-copy>Copy</button></div><pre><code><span class="tk-k">import</span> { Gateway, Router, Network, Platform } <span class="tk-k">from</span> <span class="tk-s">&quot;prism-payroute&quot;</span>;
+
+<span class="tk-k">const</span> gw = <span class="tk-k">new</span> <span class="tk-f">Gateway</span>({ router: <span class="tk-k">new</span> <span class="tk-f">Router</span>({ strategy: <span class="tk-s">&quot;smart&quot;</span>, costWeight: <span class="tk-n">1</span>, latencyWeight: <span class="tk-n">0.3</span> }) });
+
+<span class="tk-c">// Dry run: compliance + every PSP&#x27;s score, or why it was excluded</span>
+gw.<span class="tk-f">route</span>({ method: <span class="tk-s">&quot;card&quot;</span>, amount: <span class="tk-s">&quot;2499.00&quot;</span>, threeDS: <span class="tk-k">true</span>, card: { pan: <span class="tk-s">&quot;4111111111111111&quot;</span> } });
+
+<span class="tk-c">// Real attempt with idempotency: same key + same body replays, a different body is a 409</span>
+<span class="tk-k">const</span> r = gw.<span class="tk-f">pay</span>({ method: <span class="tk-s">&quot;upi&quot;</span>, amount: <span class="tk-s">&quot;499&quot;</span>, vpa: <span class="tk-s">&quot;asha@oksahy&quot;</span> }, <span class="tk-s">&quot;order-1042&quot;</span>);
+r.status;     <span class="tk-c">// &quot;captured&quot; | &quot;declined&quot; | &quot;failed&quot; | &quot;blocked&quot; | &quot;requires_action&quot;</span>
+r.attempts;   <span class="tk-c">// [{ psp, n, code, latency, inquiry? }]</span>
+
+<span class="tk-c">// Compare routers on identical traffic and incidents</span>
+<span class="tk-k">const</span> P = <span class="tk-k">new</span> <span class="tk-f">Platform</span>({ seed: <span class="tk-n">12</span> });
+P.<span class="tk-f">run</span>(<span class="tk-n">60</span>); P.<span class="tk-f">outage</span>(<span class="tk-s">&quot;neorail&quot;</span>, { secs: <span class="tk-n">60</span> }); P.<span class="tk-f">run</span>(<span class="tk-n">60</span>);
+P.<span class="tk-f">report</span>().strategies.smart.authRate;  <span class="tk-c">// vs .cheapest, .static, .round-robin, .naive-retry</span>
+
+gw.fx.<span class="tk-f">quote</span>(<span class="tk-n">12000</span>, <span class="tk-s">&quot;USD&quot;</span>, <span class="tk-s">&quot;INR&quot;</span>);      <span class="tk-c">// firm quote with markup and expiry</span>
+gw.disputes.<span class="tk-f">act</span>(id, <span class="tk-s">&quot;represent&quot;</span>, { evidence: [<span class="tk-s">&quot;delivery&quot;</span>, <span class="tk-s">&quot;comms&quot;</span>] });</code></pre></div></div>
+      <div class="tabp" data-tabp="use"><div class="codebox"><div class="bar2"><i></i><i></i><i></i><span>terminal</span><button class="btn sm ghost copy" data-copy>Copy</button></div><pre><code><span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute demo
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute simulate <span class="tk-p">--scenario</span> mixed <span class="tk-p">--seconds</span> 180
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute route <span class="tk-p">--method</span> card <span class="tk-p">--issuer</span> DECN <span class="tk-p">--amount</span> 4500
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute fx <span class="tk-p">--from</span> USD <span class="tk-p">--to</span> INR <span class="tk-p">--amount</span> 120
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute dispute
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute serve <span class="tk-p">--port</span> 8790</code></pre></div></div>
+      <div class="tabp" data-tabp="use"><div class="codebox"><div class="bar2"><i></i><i></i><i></i><span>terminal</span><button class="btn sm ghost copy" data-copy>Copy</button></div><pre><code><span class="tk-c"># use the CLI without installing</span>
+<span class="tk-pr">$ </span>npx github:krishyaa06/prism-payroute <span class="tk-p">--help</span>
+
+<span class="tk-c"># or add the engine to your project</span>
+<span class="tk-pr">$ </span>npm install github:krishyaa06/prism-payroute
+
+<span class="tk-c"># run the simulator locally</span>
+<span class="tk-pr">$ </span>git clone https://github.com/krishyaa06/prism-payroute.git &amp;&amp; cd prism-payroute
+<span class="tk-pr">$ </span>npx serve .   # then open http://localhost:3000</code></pre></div></div>
+    </section>
+  </main>
+  <footer class="foot"><div class="wrap">
+    <span>◆ Prism PayRoute · Prism Systems 12/12 · Built by <a href="https://github.com/krishyaa06">Soumya Bhandare</a> &amp; <a href="https://dc.gg/prismprotocol" target="_blank" rel="noreferrer">Prism Protocol</a></span>
+    <span><a href="https://github.com/krishyaa06/prism-payroute" target="_blank" rel="noreferrer">Source</a> · <a href="https://github.com/krishyaa06/prism-payroute/blob/main/docs/ARCHITECTURE.md">Architecture</a> · <a href="https://github.com/krishyaa06/prism-payroute/blob/main/docs/USAGE.md">Docs</a> · MIT License</span>
+  </div></footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

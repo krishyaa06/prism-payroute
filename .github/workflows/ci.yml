@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - name: Smoke test
+        run: |
+          node bin/payroute.js demo && node bin/payroute.js simulate --scenario mixed --seconds 90 && node bin/payroute.js route --method card --issuer DECN --amount 4500 && node bin/payroute.js fx --from USD --to INR --amount 120 && node bin/payroute.js dispute && node bin/payroute.js card 6070123412341234 && node bin/payroute.js psps && node bin/payroute.js bench --n 20000
